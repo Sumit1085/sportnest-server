@@ -54,6 +54,17 @@ app.get('/', (req, res) => {
     res.send('SportNest Server is running fine');
 });
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+    const mongoStatus = db ? "connected" : "disconnected";
+    res.send({
+        status: "up",
+        database: mongoStatus,
+        uptime: process.uptime(),
+        timestamp: new Date()
+    });
+});
+
 // FACILITIES API
 
 // GET /facility - Get all facilities

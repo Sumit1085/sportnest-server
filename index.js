@@ -2,25 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
 dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 8000;
-
 // Enable CORS and JSON parsing
 app.use(cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true
 }));
 app.use(express.json());
-
 const uri = process.env.MONGODB_URI;
 if (!uri) {
     console.error("MONGODB_URI environment variable is missing!");
     process.exit(1);
 }
-
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -28,11 +23,9 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
 let db;
 let facilitiesCollection;
 let bookingsCollection;
-
 async function run() {
   try {
     // Connect the client to the server
@@ -41,19 +34,16 @@ async function run() {
     db = client.db("sportnest");
     facilitiesCollection = db.collection("facilities");
     bookingsCollection = db.collection("bookings");
-
     console.log("Pinged your deployment. You successfully connected to MongoDB database 'sportnest'!");
   } catch (error) {
     console.error("Failed to connect to MongoDB", error);
   }
 }
 run().catch(console.dir);
-
 // Root endpoint
 app.get('/', (req, res) => {
     res.send('SportNest Server is running fine');
 });
-
 // Health check endpoint
 app.get('/health', async (req, res) => {
     const mongoStatus = db ? "connected" : "disconnected";
@@ -64,9 +54,7 @@ app.get('/health', async (req, res) => {
         timestamp: new Date()
     });
 });
-
 // FACILITIES API
-
 // GET /facility - Get all facilities
 app.get('/facility', async (req, res) => {
     try {
@@ -79,7 +67,6 @@ app.get('/facility', async (req, res) => {
         res.status(500).send({ message: "Failed to fetch facilities" });
     }
 });
-
 // GET /facility/:id - Get single facility details
 app.get('/facility/:id', async (req, res) => {
     try {
@@ -98,7 +85,6 @@ app.get('/facility/:id', async (req, res) => {
         res.status(500).send({ message: "Failed to fetch facility details" });
     }
 });
-
 // POST /facility - Add a new facility with validation
 app.post('/facility', async (req, res) => {
     try {
@@ -108,7 +94,6 @@ app.post('/facility', async (req, res) => {
         if (!facilityData.name || !facilityData.type || !facilityData.location || facilityData.price_per_hour === undefined) {
             return res.status(400).send({ message: "Missing required fields: name, type, location, and price_per_hour are required" });
         }
-
         // Make sure fields are correct
         const newFacility = {
             name: facilityData.name,
@@ -123,7 +108,6 @@ app.post('/facility', async (req, res) => {
             status: facilityData.status || "available",
             createdAt: new Date()
         };
-
         const result = await facilitiesCollection.insertOne(newFacility);
         res.status(201).send({ ...newFacility, _id: result.insertedId });
     } catch (error) {
@@ -131,7 +115,6 @@ app.post('/facility', async (req, res) => {
         res.status(500).send({ message: "Failed to add facility" });
     }
 });
-
 // PUT /facility/:id - Update an existing facility with validation
 app.put('/facility/:id', async (req, res) => {
     try {
@@ -144,7 +127,6 @@ app.put('/facility/:id', async (req, res) => {
         if (!facilityData.name || !facilityData.type || !facilityData.location || facilityData.price_per_hour === undefined) {
             return res.status(400).send({ message: "Missing required fields: name, type, location, and price_per_hour are required" });
         }
-
         const filter = { _id: new ObjectId(id) };
         
         const updateDoc = {
@@ -160,7 +142,6 @@ app.put('/facility/:id', async (req, res) => {
                 status: facilityData.status || "available"
             }
         };
-
         const result = await facilitiesCollection.updateOne(filter, updateDoc);
         if (result.matchedCount === 0) {
             return res.status(404).send({ message: "Facility not found" });
@@ -171,7 +152,6 @@ app.put('/facility/:id', async (req, res) => {
         res.status(500).send({ message: "Failed to update facility" });
     }
 });
-
 // DELETE /facility/:id - Delete a facility
 app.delete('/facility/:id', async (req, res) => {
     try {
@@ -190,9 +170,7 @@ app.delete('/facility/:id', async (req, res) => {
         res.status(500).send({ message: "Failed to delete facility" });
     }
 });
-
 // BOOKINGS API
-
 // GET /booking - Get bookings (optionally filtered by email)
 app.get('/booking', async (req, res) => {
     try {
@@ -209,7 +187,6 @@ app.get('/booking', async (req, res) => {
         res.status(500).send({ message: "Failed to fetch bookings" });
     }
 });
-
 // POST /booking - Create a new booking with validation
 app.post('/booking', async (req, res) => {
     try {
@@ -219,7 +196,6 @@ app.post('/booking', async (req, res) => {
         if (!bookingData.facility_id || !bookingData.booking_date || !bookingData.time_slot || !bookingData.user_email) {
             return res.status(400).send({ message: "Missing required booking details: facility_id, booking_date, time_slot, and user_email are required" });
         }
-
         const newBooking = {
             facility_id: bookingData.facility_id,
             facility_name: bookingData.facility_name || "Sport Facility",
@@ -232,7 +208,6 @@ app.post('/booking', async (req, res) => {
             status: bookingData.status || "pending",
             createdAt: new Date()
         };
-
         const result = await bookingsCollection.insertOne(newBooking);
         res.status(201).send({ ...newBooking, _id: result.insertedId });
     } catch (error) {
@@ -240,7 +215,6 @@ app.post('/booking', async (req, res) => {
         res.status(500).send({ message: "Failed to create booking" });
     }
 });
-
 // PATCH /booking/:id/cancel - Cancel a booking
 app.patch('/booking/:id/cancel', async (req, res) => {
     try {
@@ -262,7 +236,6 @@ app.patch('/booking/:id/cancel', async (req, res) => {
         res.status(500).send({ message: "Failed to cancel booking" });
     }
 });
-
 // Start Express Server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

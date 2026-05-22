@@ -88,10 +88,16 @@ app.get('/facility/:id', async (req, res) => {
     }
 });
 
-// POST /facility - Add a new facility
+// POST /facility - Add a new facility with validation
 app.post('/facility', async (req, res) => {
     try {
         const facilityData = req.body;
+        
+        // Basic input validation
+        if (!facilityData.name || !facilityData.type || !facilityData.location || facilityData.price_per_hour === undefined) {
+            return res.status(400).send({ message: "Missing required fields: name, type, location, and price_per_hour are required" });
+        }
+
         // Make sure fields are correct
         const newFacility = {
             name: facilityData.name,
@@ -99,10 +105,10 @@ app.post('/facility', async (req, res) => {
             thumbnail: facilityData.thumbnail || facilityData.image, // supports both keys
             location: facilityData.location,
             price_per_hour: parseFloat(facilityData.price_per_hour),
-            capacity: parseInt(facilityData.capacity),
+            capacity: parseInt(facilityData.capacity || 1),
             available_slots: facilityData.available_slots || [],
-            description: facilityData.description,
-            owner_email: facilityData.owner_email,
+            description: facilityData.description || "",
+            owner_email: facilityData.owner_email || "",
             status: facilityData.status || "available",
             createdAt: new Date()
         };

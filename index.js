@@ -121,14 +121,19 @@ app.post('/facility', async (req, res) => {
     }
 });
 
-// PUT /facility/:id - Update an existing facility
+// PUT /facility/:id - Update an existing facility with validation
 app.put('/facility/:id', async (req, res) => {
     try {
         const id = req.params.id;
         if (!ObjectId.isValid(id)) {
             return res.status(400).send({ message: "Invalid ID format" });
         }
+        
         const facilityData = req.body;
+        if (!facilityData.name || !facilityData.type || !facilityData.location || facilityData.price_per_hour === undefined) {
+            return res.status(400).send({ message: "Missing required fields: name, type, location, and price_per_hour are required" });
+        }
+
         const filter = { _id: new ObjectId(id) };
         
         const updateDoc = {
@@ -138,9 +143,9 @@ app.put('/facility/:id', async (req, res) => {
                 thumbnail: facilityData.thumbnail || facilityData.image,
                 location: facilityData.location,
                 price_per_hour: parseFloat(facilityData.price_per_hour),
-                capacity: parseInt(facilityData.capacity),
+                capacity: parseInt(facilityData.capacity || 1),
                 available_slots: facilityData.available_slots || [],
-                description: facilityData.description,
+                description: facilityData.description || "",
                 status: facilityData.status || "available"
             }
         };

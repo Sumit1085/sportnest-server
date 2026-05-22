@@ -199,17 +199,23 @@ app.get('/booking', async (req, res) => {
     }
 });
 
-// POST /booking - Create a new booking
+// POST /booking - Create a new booking with validation
 app.post('/booking', async (req, res) => {
     try {
         const bookingData = req.body;
+        
+        // Basic validation
+        if (!bookingData.facility_id || !bookingData.booking_date || !bookingData.time_slot || !bookingData.user_email) {
+            return res.status(400).send({ message: "Missing required booking details: facility_id, booking_date, time_slot, and user_email are required" });
+        }
+
         const newBooking = {
             facility_id: bookingData.facility_id,
-            facility_name: bookingData.facility_name,
+            facility_name: bookingData.facility_name || "Sport Facility",
             booking_date: bookingData.booking_date,
             time_slot: bookingData.time_slot,
             hours: parseInt(bookingData.hours || 1),
-            total_price: parseFloat(bookingData.total_price),
+            total_price: parseFloat(bookingData.total_price || 0),
             user_email: bookingData.user_email,
             user_name: bookingData.user_name || "Guest",
             status: bookingData.status || "pending",

@@ -6,10 +6,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 // Enable CORS and JSON parsing
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 const uri = process.env.MONGODB_URI;
 if (!uri) {
@@ -29,10 +26,10 @@ let bookingsCollection;
 async function run() {
   try {
     // Connect the client to the server
-    await client.connect();
+    // await client.connect();
     // Use the 'sportnest' database
     db = client.db("sportnest");
-    facilitiesCollection = db.collection("facilities");
+    facilitiesCollection = db.collection("facility");
     bookingsCollection = db.collection("bookings");
     console.log("Pinged your deployment. You successfully connected to MongoDB database 'sportnest'!");
   } catch (error) {
@@ -98,7 +95,7 @@ app.post('/facility', async (req, res) => {
         const newFacility = {
             name: facilityData.name,
             type: facilityData.type,
-            thumbnail: facilityData.thumbnail || facilityData.image, // supports both keys
+            thumbnail: facilityData.thumbnail || facilityData.image,
             location: facilityData.location,
             price_per_hour: parseFloat(facilityData.price_per_hour),
             capacity: parseInt(facilityData.capacity || 1),
